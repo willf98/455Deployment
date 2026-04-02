@@ -5,28 +5,29 @@ import type { Customer } from '../types/Customer'
 export default function SelectCustomer() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Customer[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const navigate = useNavigate()
 
+  function fetchCustomers(search: string) {
+    setLoading(true)
+    const url = search.trim()
+      ? `/api/Customers/Search?query=${encodeURIComponent(search)}`
+      : '/api/Customers/Search'
+    fetch(url)
+      .then((r) => r.json())
+      .then((data: Customer[]) => setResults(data))
+      .catch(() => setResults([]))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchCustomers('')
+  }, [])
+
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    if (!query.trim()) {
-      setResults([])
-      return
-    }
-    debounceRef.current = setTimeout(async () => {
-      setLoading(true)
-      try {
-        const res = await fetch(`/api/Customers/Search?query=${encodeURIComponent(query)}`)
-        const data: Customer[] = await res.json()
-        setResults(data)
-      } catch {
-        setResults([])
-      } finally {
-        setLoading(false)
-      }
-    }, 300)
+    debounceRef.current = setTimeout(() => fetchCustomers(query), 300)
   }, [query])
 
   function selectCustomer(customer: Customer) {
@@ -49,8 +50,8 @@ export default function SelectCustomer() {
             autoFocus
           />
         </div>
-        {loading && <div className="text-muted mb-2">Searching...</div>}
-        {results.length > 0 && (
+        {loading && <div className="text-muted mb-2">Loading...</div>}
+        {!loading && results.length > 0 && (
           <ul className="list-group">
             {results.map((c) => (
               <button

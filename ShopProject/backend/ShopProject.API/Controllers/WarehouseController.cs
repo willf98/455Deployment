@@ -52,5 +52,40 @@ namespace ShopProject.API.Controllers
                 return Ok(new List<object>());
             }
         }
+
+        [HttpGet("Customer/{customerId}/Predictions")]
+        public async Task<IActionResult> CustomerPredictions(int customerId)
+        {
+            try
+            {
+                var hasPredictions = await _context.OrderPredictions.AnyAsync();
+                if (!hasPredictions)
+                    return Ok(new List<object>());
+
+                var results = await (
+                    from o in _context.Orders
+                    join p in _context.OrderPredictions on o.OrderId equals p.OrderId
+                    join s in _context.Shipments on o.OrderId equals s.OrderId into shipGroup
+                    from sg in shipGroup.DefaultIfEmpty()
+                    where o.CustomerId == customerId && sg == null
+                    orderby p.LateDeliveryProbability descending
+                    select new
+                    {
+                        o.OrderId,
+                        o.OrderDatetime,
+                        o.OrderTotal,
+                        p.LateDeliveryProbability,
+                        p.PredictedLateDelivery,
+                        p.PredictionTimestamp
+                    }
+                ).ToListAsync();
+
+                return Ok(results);
+            }
+            catch
+            {
+                return Ok(new List<object>());
+            }
+        }
     }
 }

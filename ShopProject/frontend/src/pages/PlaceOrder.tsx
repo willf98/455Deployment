@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import type { Product } from '../types/Product'
 
 interface LineItem {
@@ -18,10 +18,7 @@ export default function PlaceOrder() {
 
   useEffect(() => {
     const id = localStorage.getItem('selectedCustomerId')
-    if (!id) {
-      navigate('/select-customer')
-      return
-    }
+    if (!id) return
     fetch('/api/Products/Active')
       .then((r) => r.json())
       .then(setProducts)
@@ -86,6 +83,13 @@ export default function PlaceOrder() {
   const shippingFee = 9.99
   const tax = subtotal * 0.08
   const total = subtotal + shippingFee + tax
+
+  if (!localStorage.getItem('selectedCustomerId')) return (
+    <div className="text-center mt-5">
+      <p className="text-muted mb-3">No customer selected. Please select a customer first.</p>
+      <Link to="/select-customer" className="btn btn-primary">Select Customer</Link>
+    </div>
+  )
 
   return (
     <div className="row justify-content-center">
