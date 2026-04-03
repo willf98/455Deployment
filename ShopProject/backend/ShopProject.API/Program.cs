@@ -8,7 +8,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ShopDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("ShopConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ShopConnection")));
 
 builder.Services.AddCors(options =>
 {
@@ -25,20 +25,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
-// Ensure order_predictions table exists without touching existing tables
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
-    db.Database.ExecuteSqlRaw(@"
-        CREATE TABLE IF NOT EXISTS order_predictions (
-            order_id INTEGER PRIMARY KEY,
-            late_delivery_probability REAL,
-            predicted_late_delivery INTEGER,
-            prediction_timestamp TEXT
-        )
-    ");
-}
 
 if (app.Environment.IsDevelopment())
 {

@@ -16,13 +16,15 @@ namespace ShopProject.API.Controllers
         }
 
         [HttpGet("Search")]
-        public async Task<IActionResult> Search([FromQuery] string query)
+        public async Task<IActionResult> Search([FromQuery] string? query)
         {
-            if (string.IsNullOrWhiteSpace(query))
-                return Ok(new List<object>());
+            IQueryable<Customer> q = _context.Customers;
 
-            var results = await _context.Customers
-                .Where(c => c.FullName.Contains(query) || c.Email.Contains(query))
+            if (!string.IsNullOrWhiteSpace(query))
+                q = q.Where(c => c.FullName.Contains(query) || c.Email.Contains(query));
+
+            var results = await q
+                .OrderBy(c => c.FullName)
                 .Take(20)
                 .Select(c => new
                 {

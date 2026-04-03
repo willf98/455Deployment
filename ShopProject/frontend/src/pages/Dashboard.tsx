@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import type { DashboardData } from '../types/DashboardData'
 
 export default function Dashboard() {
@@ -11,7 +11,7 @@ export default function Dashboard() {
   useEffect(() => {
     const id = localStorage.getItem('selectedCustomerId')
     if (!id) {
-      navigate('/select-customer')
+      setLoading(false)
       return
     }
     fetch(`/api/Customers/${id}/Dashboard`)
@@ -26,7 +26,12 @@ export default function Dashboard() {
 
   if (loading) return <div className="text-center mt-5"><div className="spinner-border" /></div>
   if (error) return <div className="alert alert-danger">{error}</div>
-  if (!data) return null
+  if (!data) return (
+    <div className="text-center mt-5">
+      <p className="text-muted mb-3">No customer selected. Please select a customer first.</p>
+      <Link to="/select-customer" className="btn btn-primary">Select Customer</Link>
+    </div>
+  )
 
   const { customer, totalOrders, totalSpend, recentOrders } = data
 

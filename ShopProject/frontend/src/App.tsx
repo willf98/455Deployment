@@ -6,6 +6,7 @@ import OrderHistory from './pages/OrderHistory'
 import OrderDetailPage from './pages/OrderDetail'
 import WarehousePriority from './pages/WarehousePriority'
 import RunScoring from './pages/RunScoring'
+import NotebookViewer from './pages/NotebookViewer'
 
 function Navbar() {
   const customerName = localStorage.getItem('selectedCustomerName')
@@ -41,6 +42,9 @@ function Navbar() {
           <li className="nav-item">
             <NavLink className="nav-link" to="/scoring">Run Scoring</NavLink>
           </li>
+          <li className="nav-item">
+            <NavLink className="nav-link" to="/notebook">Fraud Notebook</NavLink>
+          </li>
         </ul>
         <span className="navbar-text text-light">
           {customerName ? (
@@ -68,6 +72,7 @@ export default function App() {
           <Route path="/orders/:orderId" element={<OrderDetailPage />} />
           <Route path="/warehouse/priority" element={<WarehousePriority />} />
           <Route path="/scoring" element={<RunScoring />} />
+          <Route path="/notebook" element={<NotebookViewer />} />
         </Routes>
       </div>
     </BrowserRouter>
