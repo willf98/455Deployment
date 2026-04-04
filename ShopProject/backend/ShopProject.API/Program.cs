@@ -17,7 +17,8 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
             "http://localhost:3000",
             "http://localhost:5173",
-            "https://your-app.vercel.app"
+            "https://455-deployment.vercel.app",
+                "https://455-deployment-willf98-4166s-projects.vercel.app"
         )
         .AllowAnyHeader()
         .AllowAnyMethod();
@@ -32,9 +33,9 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS order_predictions (
-            order_id INTEGER PRIMARY KEY,
-            late_delivery_probability REAL,
-            predicted_late_delivery INTEGER,
+            order_id             INTEGER PRIMARY KEY,
+            fraud_probability    REAL,
+            predicted_fraud      INTEGER,
             prediction_timestamp TEXT
         )
     ");

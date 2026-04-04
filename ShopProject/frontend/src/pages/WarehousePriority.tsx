@@ -22,9 +22,9 @@ export default function WarehousePriority() {
 
   return (
     <div>
-      <h2 className="mb-2">Late Delivery Priority Queue</h2>
+      <h2 className="mb-2">Fraud Risk Priority Queue</h2>
       <p className="text-muted mb-4">
-        These unshipped orders are ranked by predicted late-delivery probability. Process the top entries first.
+        These unshipped orders are ranked by predicted fraud probability. Review the top entries before fulfilling.
       </p>
 
       {items.length === 0 ? (
@@ -41,8 +41,8 @@ export default function WarehousePriority() {
                   <th>Customer</th>
                   <th>Order Date</th>
                   <th>Total</th>
-                  <th>Late Delivery %</th>
-                  <th>Predicted Late</th>
+                  <th>Fraud Risk %</th>
+                  <th>Predicted Fraud</th>
                   <th>Scored At</th>
                 </tr>
               </thead>
@@ -54,13 +54,13 @@ export default function WarehousePriority() {
                     <td>{new Date(item.orderDatetime).toLocaleDateString()}</td>
                     <td>{item.orderTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
                     <td>
-                      <span className={`badge ${(item.lateDeliveryProbability ?? 0) > 0.7 ? 'bg-danger' : (item.lateDeliveryProbability ?? 0) > 0.4 ? 'bg-warning text-dark' : 'bg-success'}`}>
-                        {item.lateDeliveryProbability != null
-                          ? `${(item.lateDeliveryProbability * 100).toFixed(1)}%`
+                      <span className={`badge ${(item.fraudProbability ?? 0) > 0.7 ? 'bg-danger' : (item.fraudProbability ?? 0) > 0.4 ? 'bg-warning text-dark' : 'bg-success'}`}>
+                        {item.fraudProbability != null
+                          ? `${(item.fraudProbability * 100).toFixed(1)}%`
                           : 'N/A'}
                       </span>
                     </td>
-                    <td>{item.predictedLateDelivery === 1 ? '⚠️ Yes' : '✅ No'}</td>
+                    <td>{item.predictedFraud === 1 ? '⚠️ Yes' : '✅ No'}</td>
                     <td>
                       {item.predictionTimestamp
                         ? new Date(item.predictionTimestamp).toLocaleString()

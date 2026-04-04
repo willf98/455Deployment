@@ -12,8 +12,8 @@ interface CustomerPrediction {
   orderId: number
   orderDatetime: string
   orderTotal: number
-  lateDeliveryProbability: number
-  predictedLateDelivery: number
+  fraudProbability: number
+  predictedFraud: number
   predictionTimestamp: string
 }
 
@@ -186,7 +186,7 @@ export default function RunScoring() {
                       <th>Order ID</th>
                       <th>Date</th>
                       <th>Total</th>
-                      <th>Late Risk</th>
+                      <th>Fraud Risk</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -195,7 +195,7 @@ export default function RunScoring() {
                         <td>#{p.orderId}</td>
                         <td>{new Date(p.orderDatetime).toLocaleDateString()}</td>
                         <td>{p.orderTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-                        <td>{riskBadge(p.lateDeliveryProbability)}</td>
+                        <td>{riskBadge(p.fraudProbability)}</td>
                       </tr>
                     ))}
                   </tbody>

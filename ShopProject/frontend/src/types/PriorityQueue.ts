@@ -4,7 +4,7 @@ export interface PriorityQueueItem {
   orderTotal: number;
   customerId: number;
   customerName: string;
-  lateDeliveryProbability: number | null;
-  predictedLateDelivery: number | null;
+  fraudProbability: number | null;
+  predictedFraud: number | null;
   predictionTimestamp: string | null;
 }

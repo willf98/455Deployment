@@ -31,7 +31,7 @@ namespace ShopProject.API.Controllers
                     join s in _context.Shipments on o.OrderId equals s.OrderId into shipGroup
                     from sg in shipGroup.DefaultIfEmpty()
                     where sg == null
-                    orderby p.LateDeliveryProbability descending, o.OrderDatetime ascending
+                    orderby p.FraudProbability descending, o.OrderDatetime ascending
                     select new
                     {
                         o.OrderId,
@@ -39,8 +39,8 @@ namespace ShopProject.API.Controllers
                         o.OrderTotal,
                         c.CustomerId,
                         CustomerName = c.FullName,
-                        p.LateDeliveryProbability,
-                        p.PredictedLateDelivery,
+                        p.FraudProbability,
+                        p.PredictedFraud,
                         p.PredictionTimestamp
                     }
                 ).Take(50).ToListAsync();
@@ -68,14 +68,14 @@ namespace ShopProject.API.Controllers
                     join s in _context.Shipments on o.OrderId equals s.OrderId into shipGroup
                     from sg in shipGroup.DefaultIfEmpty()
                     where o.CustomerId == customerId && sg == null
-                    orderby p.LateDeliveryProbability descending
+                    orderby p.FraudProbability descending
                     select new
                     {
                         o.OrderId,
                         o.OrderDatetime,
                         o.OrderTotal,
-                        p.LateDeliveryProbability,
-                        p.PredictedLateDelivery,
+                        p.FraudProbability,
+                        p.PredictedFraud,
                         p.PredictionTimestamp
                     }
                 ).ToListAsync();
