@@ -8,7 +8,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<ShopDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("ShopConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ShopConnection")));
 
 builder.Services.AddCors(options =>
 {
@@ -40,6 +40,7 @@ using (var scope = app.Services.CreateScope())
         )
     ");
 }
+
 
 if (app.Environment.IsDevelopment())
 {

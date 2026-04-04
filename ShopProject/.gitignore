@@ -1,0 +1,11 @@
+# Environment / secrets
+.env
+
+# .NET build output
+bin/
+obj/
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
