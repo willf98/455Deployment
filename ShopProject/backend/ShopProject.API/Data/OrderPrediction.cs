@@ -14,9 +14,9 @@ namespace ShopProject.API.Data
         public double? FraudProbability { get; set; }
 
         [Column("predicted_fraud")]
-        public int? PredictedFraud { get; set; }
+        public bool? PredictedFraud { get; set; }
 
         [Column("prediction_timestamp")]
-        public string? PredictionTimestamp { get; set; }
+        public DateTime? PredictionTimestamp { get; set; }
     }
 }

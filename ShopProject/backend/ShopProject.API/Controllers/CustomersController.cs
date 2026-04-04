@@ -25,7 +25,7 @@ namespace ShopProject.API.Controllers
 
             var results = await q
                 .OrderBy(c => c.FullName)
-                .Take(20)
+                .Take(string.IsNullOrWhiteSpace(query) ? 500 : 20)
                 .Select(c => new
                 {
                     c.CustomerId,

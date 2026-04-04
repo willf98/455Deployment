@@ -111,7 +111,7 @@ namespace ShopProject.API.Controllers
                 var order = new Order
                 {
                     CustomerId = request.CustomerId,
-                    OrderDatetime = DateTime.UtcNow.ToString("o"),
+                    OrderDatetime = DateTime.UtcNow,
                     PaymentMethod = request.PaymentMethod,
                     DeviceType = "web",
                     IpCountry = "US",
@@ -120,8 +120,8 @@ namespace ShopProject.API.Controllers
                     TaxAmount = taxAmount,
                     OrderTotal = orderTotal,
                     RiskScore = 0.0,
-                    IsFraud = 0,
-                    PromoUsed = 0
+                    IsFraud = false,
+                    PromoUsed = false
                 };
 
                 _context.Orders.Add(order);

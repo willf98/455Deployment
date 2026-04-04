@@ -16,7 +16,7 @@ namespace ShopProject.API.Data
 
         [Required]
         [Column("order_datetime")]
-        public string OrderDatetime { get; set; } = string.Empty;
+        public DateTime OrderDatetime { get; set; }
 
         [Column("billing_zip")]
         public string? BillingZip { get; set; }
@@ -40,7 +40,7 @@ namespace ShopProject.API.Data
         public string IpCountry { get; set; } = string.Empty;
 
         [Column("promo_used")]
-        public int PromoUsed { get; set; } = 0;
+        public bool PromoUsed { get; set; } = false;
 
         [Column("promo_code")]
         public string? PromoCode { get; set; }
@@ -66,6 +66,6 @@ namespace ShopProject.API.Data
         public double RiskScore { get; set; }
 
         [Column("is_fraud")]
-        public int IsFraud { get; set; } = 0;
+        public bool IsFraud { get; set; } = false;
     }
 }

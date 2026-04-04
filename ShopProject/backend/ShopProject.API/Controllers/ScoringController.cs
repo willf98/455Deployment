@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using ShopProject.API.Data;
 
 namespace ShopProject.API.Controllers
 {
@@ -7,108 +8,106 @@ namespace ShopProject.API.Controllers
     [Route("[controller]")]
     public class ScoringController : ControllerBase
     {
+        private readonly ShopDbContext _context;
+
+        public ScoringController(ShopDbContext context)
+        {
+            _context = context;
+        }
+
         [HttpPost("Run")]
         public async Task<IActionResult> Run()
         {
             try
             {
-                // Search multiple candidate roots so the script is found whether
-                // the app is launched via "dotnet run" (CWD = project dir) or
-                // via Visual Studio (CWD = bin/Debug/net10.0/).
-                var candidateBases = new[]
-                {
-                    // From bin/Debug/net10.0/ → up 5 levels = ShopProject/
-                    Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..")),
-                    // From project dir via dotnet run → up 2 levels = ShopProject/
-                    Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..")),
-                    // From project dir one level up
-                    Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..")),
-                };
-
-                string? scriptPath = null;
-                foreach (var root in candidateBases)
-                {
-                    var candidate = Path.Combine(root, "jobs", "run_inference.py");
-                    if (System.IO.File.Exists(candidate))
+                // Load unshipped orders that have not yet been scored
+                var unscored = await (
+                    from o in _context.Orders
+                    join c in _context.Customers on o.CustomerId equals c.CustomerId
+                    join s in _context.Shipments on o.OrderId equals s.OrderId into shipGroup
+                    from sg in shipGroup.DefaultIfEmpty()
+                    join p in _context.OrderPredictions on o.OrderId equals p.OrderId into predGroup
+                    from pg in predGroup.DefaultIfEmpty()
+                    where sg == null && pg == null
+                    select new
                     {
-                        scriptPath = candidate;
-                        break;
+                        o.OrderId,
+                        o.PaymentMethod,
+                        o.IpCountry,
+                        o.PromoUsed,
+                        o.OrderTotal,
+                        o.BillingZip,
+                        o.ShippingZip,
+                        o.DeviceType,
+                        c.LoyaltyTier
                     }
-                }
+                ).ToListAsync();
 
-                if (scriptPath == null)
+                if (unscored.Count == 0)
                 {
                     return Ok(new
                     {
-                        success = false,
-                        message = "Inference script not found. Make sure jobs/run_inference.py exists at the project root.",
+                        success = true,
+                        message = "No unscored unshipped orders found.",
                         timestamp = DateTime.UtcNow.ToString("o")
                     });
                 }
 
-                // Try "python" first, fall back to "python3"
-                foreach (var pythonExe in new[] { "python", "python3" })
+                var now = DateTime.UtcNow;
+                var predictions = new List<OrderPrediction>();
+
+                foreach (var order in unscored)
                 {
-                    try
+                    double score = -2.8; // intercept — calibrated for ~6% base fraud rate
+
+                    // Payment method risk
+                    if (order.PaymentMethod == "crypto") score += 1.8;
+                    else if (order.PaymentMethod == "gift_card") score += 1.2;
+                    else if (order.PaymentMethod == "bank_transfer") score += 0.4;
+
+                    // Foreign IP
+                    if (order.IpCountry != "US") score += 1.4;
+
+                    // Promo used
+                    if (order.PromoUsed) score += 0.6;
+
+                    // High value order
+                    if (order.OrderTotal > 300) score += 0.8;
+                    else if (order.OrderTotal > 150) score += 0.4;
+
+                    // Billing/shipping zip mismatch
+                    if (!string.IsNullOrEmpty(order.BillingZip) &&
+                        !string.IsNullOrEmpty(order.ShippingZip) &&
+                        order.BillingZip != order.ShippingZip)
+                        score += 0.5;
+
+                    // Mobile device slight risk
+                    if (order.DeviceType == "mobile") score += 0.2;
+
+                    // Lower loyalty tier slight risk
+                    if (order.LoyaltyTier == "none" || string.IsNullOrEmpty(order.LoyaltyTier))
+                        score += 0.3;
+
+                    double fraudProb = 1.0 / (1.0 + Math.Exp(-score));
+
+                    predictions.Add(new OrderPrediction
                     {
-                        var psi = new ProcessStartInfo
-                        {
-                            FileName = pythonExe,
-                            // IMPORTANT: quote the path so spaces in folder/username don't split the argument
-                            Arguments = $"\"{scriptPath}\"",
-                            WorkingDirectory = Path.GetDirectoryName(scriptPath)!,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true,
-                            UseShellExecute = false,
-                            CreateNoWindow = true
-                        };
-
-                        using var process = new Process { StartInfo = psi };
-                        process.Start();
-
-                        // Read stdout and stderr BEFORE WaitForExit to avoid deadlock
-                        // when the process produces a lot of output
-                        var stdoutTask = process.StandardOutput.ReadToEndAsync();
-                        var stderrTask = process.StandardError.ReadToEndAsync();
-
-                        bool finished = process.WaitForExit(30000);
-
-                        var stdout = await stdoutTask;
-                        var stderr = await stderrTask;
-
-                        if (!finished)
-                        {
-                            process.Kill();
-                            return Ok(new
-                            {
-                                success = false,
-                                message = "Scoring script timed out after 30 seconds.",
-                                timestamp = DateTime.UtcNow.ToString("o")
-                            });
-                        }
-
-                        bool succeeded = process.ExitCode == 0;
-                        return Ok(new
-                        {
-                            success = succeeded,
-                            message = succeeded
-                                ? (string.IsNullOrWhiteSpace(stdout) ? "Scoring completed." : stdout.Trim())
-                                : $"Script error (exit code {process.ExitCode}): {stderr.Trim()}",
-                            timestamp = DateTime.UtcNow.ToString("o")
-                        });
-                    }
-                    catch (System.ComponentModel.Win32Exception)
-                    {
-                        // This python executable wasn't found — try the next one
-                        continue;
-                    }
+                        OrderId = order.OrderId,
+                        FraudProbability = fraudProb,
+                        PredictedFraud = fraudProb >= 0.30,
+                        PredictionTimestamp = now
+                    });
                 }
 
+                _context.OrderPredictions.AddRange(predictions);
+                await _context.SaveChangesAsync();
+
+                int flagged = predictions.Count(p => p.PredictedFraud == true);
                 return Ok(new
                 {
-                    success = false,
-                    message = "Python not found. Make sure Python is installed and on your PATH.",
-                    timestamp = DateTime.UtcNow.ToString("o")
+                    success = true,
+                    message = $"Scored {predictions.Count} orders — {flagged} flagged as potentially fraudulent.",
+                    timestamp = now.ToString("o")
                 });
             }
             catch (Exception ex)
@@ -116,7 +115,7 @@ namespace ShopProject.API.Controllers
                 return Ok(new
                 {
                     success = false,
-                    message = $"Unexpected error: {ex.Message}",
+                    message = $"Scoring error: {ex.Message}",
                     timestamp = DateTime.UtcNow.ToString("o")
                 });
             }

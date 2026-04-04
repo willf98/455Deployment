@@ -27,17 +27,33 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Ensure order_predictions table exists without touching existing tables
+// Migrate order_predictions to fraud schema if needed
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
     db.Database.ExecuteSqlRaw(@"
-        CREATE TABLE IF NOT EXISTS order_predictions (
-            order_id             INTEGER PRIMARY KEY,
-            fraud_probability    REAL,
-            predicted_fraud      INTEGER,
-            prediction_timestamp TEXT
-        )
+        DO $$
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'order_predictions'
+                  AND column_name = 'late_delivery_probability'
+            ) THEN
+                DROP TABLE order_predictions;
+            END IF;
+
+            IF NOT EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_name = 'order_predictions'
+            ) THEN
+                CREATE TABLE order_predictions (
+                    order_id             BIGINT PRIMARY KEY REFERENCES orders(order_id),
+                    fraud_probability    REAL,
+                    predicted_fraud      BOOLEAN,
+                    prediction_timestamp TIMESTAMPTZ
+                );
+            END IF;
+        END $$;
     ");
 }
 
