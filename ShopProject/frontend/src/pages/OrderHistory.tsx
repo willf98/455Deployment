@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import type { Order } from '../types/Order'
+import { apiFetch } from '../lib/apiFetch'
 
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -14,7 +15,7 @@ export default function OrderHistory() {
       setLoading(false)
       return
     }
-    fetch(`/api/Orders/Customer/${id}`)
+    apiFetch(`/api/Orders/Customer/${id}`)
       .then((r) => {
         if (!r.ok) throw new Error('Failed to load orders')
         return r.json()

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type { Customer } from '../types/Customer'
+import { apiFetch } from '../lib/apiFetch'
 
 interface ScoringResult {
   success: boolean
@@ -39,7 +40,7 @@ export default function RunScoring() {
     debounceRef.current = setTimeout(async () => {
       setSearching(true)
       try {
-        const res = await fetch(`/api/Customers/Search?query=${encodeURIComponent(query)}`)
+        const res = await apiFetch(`/api/Customers/Search?query=${encodeURIComponent(query)}`)
         const data: Customer[] = await res.json()
         setSearchResults(data)
       } catch {
@@ -55,7 +56,7 @@ export default function RunScoring() {
     setQuery('')
     setSearchResults([])
     setLoadingPredictions(true)
-    fetch(`/api/Warehouse/Customer/${c.customerId}/Predictions`)
+    apiFetch(`/api/Warehouse/Customer/${c.customerId}/Predictions`)
       .then((r) => r.json())
       .then((data: CustomerPrediction[]) => setPredictions(data))
       .catch(() => setPredictions([]))
@@ -67,12 +68,12 @@ export default function RunScoring() {
     setResult(null)
     setError('')
     try {
-      const res = await fetch('/api/Scoring/Run', { method: 'POST' })
+      const res = await apiFetch('/api/Scoring/Run', { method: 'POST' })
       const data: ScoringResult = await res.json()
       setResult(data)
       if (data.success && selectedCustomer) {
         setLoadingPredictions(true)
-        fetch(`/api/Warehouse/Customer/${selectedCustomer.customerId}/Predictions`)
+        apiFetch(`/api/Warehouse/Customer/${selectedCustomer.customerId}/Predictions`)
           .then((r) => r.json())
           .then((d: CustomerPrediction[]) => setPredictions(d))
           .catch(() => {})

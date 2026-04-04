@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Customer } from '../types/Customer'
+import { apiFetch } from '../lib/apiFetch'
 
 export default function SelectCustomer() {
   const [query, setQuery] = useState('')
@@ -14,7 +15,7 @@ export default function SelectCustomer() {
     const url = search.trim()
       ? `/api/Customers/Search?query=${encodeURIComponent(search)}`
       : '/api/Customers/Search'
-    fetch(url)
+    apiFetch(url)
       .then((r) => r.json())
       .then((data: Customer[]) => setResults(data))
       .catch(() => setResults([]))

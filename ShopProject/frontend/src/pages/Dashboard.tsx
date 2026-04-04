@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import type { DashboardData } from '../types/DashboardData'
+import { apiFetch } from '../lib/apiFetch'
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -14,7 +15,7 @@ export default function Dashboard() {
       setLoading(false)
       return
     }
-    fetch(`/api/Customers/${id}/Dashboard`)
+    apiFetch(`/api/Customers/${id}/Dashboard`)
       .then((r) => {
         if (!r.ok) throw new Error('Failed to load dashboard')
         return r.json()

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import type { OrderDetail } from '../types/Order'
+import { apiFetch } from '../lib/apiFetch'
 
 export default function OrderDetailPage() {
   const { orderId } = useParams<{ orderId: string }>()
@@ -11,7 +12,7 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     if (!orderId) return
-    fetch(`/api/Orders/${orderId}/Items`)
+    apiFetch(`/api/Orders/${orderId}/Items`)
       .then((r) => {
         if (!r.ok) throw new Error('Order not found')
         return r.json()

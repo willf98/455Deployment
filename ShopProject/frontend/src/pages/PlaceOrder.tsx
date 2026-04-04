@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import type { Product } from '../types/Product'
+import { apiFetch } from '../lib/apiFetch'
 
 interface LineItem {
   productId: number
@@ -19,7 +20,7 @@ export default function PlaceOrder() {
   useEffect(() => {
     const id = localStorage.getItem('selectedCustomerId')
     if (!id) return
-    fetch('/api/Products/Active')
+    apiFetch('/api/Products/Active')
       .then((r) => r.json())
       .then(setProducts)
       .catch(() => setErrorMsg('Failed to load products.'))
@@ -60,7 +61,7 @@ export default function PlaceOrder() {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/Orders/Place', {
+      const res = await apiFetch('/api/Orders/Place', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customerId, paymentMethod, items: validItems }),

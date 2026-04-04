@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { PriorityQueueItem } from '../types/PriorityQueue'
+import { apiFetch } from '../lib/apiFetch'
 
 export default function WarehousePriority() {
   const [items, setItems] = useState<PriorityQueueItem[]>([])
@@ -7,7 +8,7 @@ export default function WarehousePriority() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch('/api/Warehouse/PriorityQueue')
+    apiFetch('/api/Warehouse/PriorityQueue')
       .then((r) => {
         if (!r.ok) throw new Error('Failed to load priority queue')
         return r.json()
