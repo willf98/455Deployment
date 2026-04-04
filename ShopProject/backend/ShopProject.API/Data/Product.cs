@@ -31,6 +31,6 @@ namespace ShopProject.API.Data
         public double Cost { get; set; }
 
         [Column("is_active")]
-        public int IsActive { get; set; } = 1;
+        public bool IsActive { get; set; } = true;
     }
 }

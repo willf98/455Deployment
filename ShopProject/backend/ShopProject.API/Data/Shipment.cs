@@ -15,7 +15,7 @@ namespace ShopProject.API.Data
         public int OrderId { get; set; }
 
         [Column("ship_datetime")]
-        public string? ShipDatetime { get; set; }
+        public DateTime? ShipDatetime { get; set; }
 
         [Required]
         [Column("carrier")]
@@ -38,6 +38,6 @@ namespace ShopProject.API.Data
         public int ActualDays { get; set; }
 
         [Column("late_delivery")]
-        public int LateDelivery { get; set; } = 0;
+        public bool LateDelivery { get; set; } = false;
     }
 }

@@ -22,10 +22,10 @@ namespace ShopProject.API.Data
         public string? Gender { get; set; }
 
         [Column("birthdate")]
-        public string? Birthdate { get; set; }
+        public DateOnly? Birthdate { get; set; }
 
         [Column("created_at")]
-        public string? CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
         [Column("city")]
         public string? City { get; set; }
@@ -43,6 +43,6 @@ namespace ShopProject.API.Data
         public string? LoyaltyTier { get; set; }
 
         [Column("is_active")]
-        public int IsActive { get; set; } = 1;
+        public bool IsActive { get; set; } = true;
     }
 }
