@@ -163,10 +163,10 @@ export function getMockResponse(url: string, options?: RequestInit): any {
       .slice(0, 5)
       .map(o => ({ orderId: o.orderId, orderDatetime: o.orderDatetime, orderTotal: o.orderTotal, isShipped: o.isShipped }))
     return {
-      Customer: customer,
-      TotalOrders: orders.length,
-      TotalSpend: orders.reduce((s, o) => s + o.orderTotal, 0),
-      RecentOrders: recentOrders,
+      customer,
+      totalOrders: orders.length,
+      totalSpend: orders.reduce((s, o) => s + o.orderTotal, 0),
+      recentOrders,
     }
   }
 
@@ -186,11 +186,11 @@ export function getMockResponse(url: string, options?: RequestInit): any {
     const id = parseInt(itemsMatch[1])
     const order = [...BASE_ORDERS, ...sessionOrders].find(o => o.orderId === id)
     return {
-      OrderId: id,
-      OrderDatetime: order?.orderDatetime ?? new Date().toISOString(),
-      OrderTotal: order?.orderTotal ?? 0,
-      PaymentMethod: order?.paymentMethod ?? 'Credit Card',
-      Items: ORDER_ITEMS[id] ?? order?.items ?? [],
+      orderId: id,
+      orderDatetime: order?.orderDatetime ?? new Date().toISOString(),
+      orderTotal: order?.orderTotal ?? 0,
+      paymentMethod: order?.paymentMethod ?? 'Credit Card',
+      items: ORDER_ITEMS[id] ?? order?.items ?? [],
     }
   }
 
