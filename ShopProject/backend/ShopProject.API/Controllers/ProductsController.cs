@@ -19,7 +19,7 @@ namespace ShopProject.API.Controllers
         public async Task<IActionResult> GetActive()
         {
             var products = await _context.Products
-                .Where(p => p.IsActive == 1)
+                .Where(p => p.IsActive == true)
                 .Select(p => new
                 {
                     p.ProductId,
